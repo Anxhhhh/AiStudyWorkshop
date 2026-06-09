@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTaskStore } from '../store/useTaskStore';
+import { useNoteStore } from '../store/useNoteStore';
 import { motion, type Variants } from 'framer-motion';
 import {
   CheckSquare,
@@ -16,83 +19,10 @@ import StatusColumn from '../components/ui/StatusColumn';
 import AIWidget from '../components/ui/AIWidget';
 import type { BoardCardData } from '../components/ui/BoardCard';
 
-/* ─── Sample Data ─── */
-const kanbanData: Record<string, BoardCardData[]> = {
-  'not-started': [
-    {
-      id: 'ns-1',
-      title: 'Review Operating Systems Chapter 4',
-      tags: ['OS', 'Theory'],
-      priority: 'high',
-      dueDate: 'Jun 3',
-      assignee: 'AR',
-    },
-    {
-      id: 'ns-2',
-      title: 'Set up Docker for backend service',
-      tags: ['DevOps'],
-      priority: 'medium',
-      dueDate: 'Jun 5',
-      hasAI: true,
-    },
-  ],
-  'in-progress': [
-    {
-      id: 'ip-1',
-      title: 'Algorithm Study Plan — Week 3',
-      tags: ['DSA'],
-      priority: 'high',
-      dueDate: 'May 30',
-      hasAI: true,
-      assignee: 'AR',
-    },
-    {
-      id: 'ip-2',
-      title: 'Spring Boot REST API endpoints',
-      tags: ['Backend', 'Java'],
-      priority: 'medium',
-      dueDate: 'Jun 1',
-    },
-    {
-      id: 'ip-3',
-      title: 'Frontend component architecture',
-      tags: ['React', 'UI'],
-      priority: 'medium',
-      hasAI: true,
-    },
-  ],
-  done: [
-    {
-      id: 'd-1',
-      title: 'Data Structures — Arrays & Linked Lists',
-      tags: ['DSA'],
-      priority: 'low',
-    },
-    {
-      id: 'd-2',
-      title: 'Project kickoff meeting notes',
-      tags: ['Meetings'],
-    },
-  ],
-};
-
 const columnConfig = [
   { id: 'not-started', label: 'Not Started', dotColor: '#52525b' },
   { id: 'in-progress', label: 'In Progress', dotColor: 'var(--accent-blue)' },
   { id: 'done', label: 'Done', dotColor: 'var(--color-success)' },
-];
-
-const recentNotes = [
-  { id: 'n1', title: 'Data Structures Notes', preview: 'Arrays provide O(1) access time. Linked lists allow dynamic memory...', date: '2h ago' },
-  { id: 'n2', title: 'Algorithm Complexity', preview: 'Big O notation describes the upper bound of time complexity...', date: 'Yesterday' },
-  { id: 'n3', title: 'System Design Basics', preview: 'Scalability, reliability, and availability are core pillars...', date: '3d ago' },
-];
-
-const upcomingTasks = [
-  { id: 't1', text: 'Submit project proposal', done: false, due: 'Today' },
-  { id: 't2', text: 'Review pull request #42', done: false, due: 'Tomorrow' },
-  { id: 't3', text: 'Data structures quiz prep', done: true, due: 'Done' },
-  { id: 't4', text: 'Write OS concepts summary', done: false, due: 'Jun 2' },
 ];
 
 /* ─── Animation variants ─── */
@@ -114,6 +44,35 @@ const itemVariants: Variants = {
 
 /* ─── Component ─── */
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { tasks, fetchTasks } = useTaskStore();
+  const { notes, fetchNotes } = useNoteStore();
+
+  useEffect(() => {
+    fetchTasks();
+    fetchNotes();
+  }, [fetchTasks, fetchNotes]);
+
+  const kanbanData: Record<string, BoardCardData[]> = {
+    'not-started': tasks.filter(t => t.status === 'Not Started' || t.status === 'not-started').map(t => ({ id: t.id, title: t.title, priority: 'medium' as any })),
+    'in-progress': tasks.filter(t => t.status === 'In Progress' || t.status === 'in-progress').map(t => ({ id: t.id, title: t.title, priority: 'high' as any })),
+    'done': tasks.filter(t => t.status === 'Done' || t.status === 'done').map(t => ({ id: t.id, title: t.title, priority: 'low' as any })),
+  };
+
+  const recentNotes = notes.slice(0, 3).map(n => ({
+    id: n.id,
+    title: n.title,
+    preview: n.preview || (n.content && n.content.substring(0, 50)) || 'No content...',
+    date: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : 'Just now'
+  }));
+
+  const upcomingTasks = tasks.filter(t => t.status !== 'Done' && t.status !== 'done').slice(0, 4).map(t => ({
+    id: t.id,
+    text: t.title,
+    done: false,
+    due: 'Pending'
+  }));
+
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -138,13 +97,13 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <motion.div variants={itemVariants} className="quick-actions">
         {[
-          { icon: <Plus size={14} />, label: 'New Note' },
-          { icon: <CheckSquare size={14} />, label: 'New Task' },
-          { icon: <Brain size={14} />, label: 'Ask AI' },
-          { icon: <Target size={14} />, label: 'Set Goal' },
-          { icon: <Layers size={14} />, label: 'New Project' },
+          { icon: <Plus size={14} />, label: 'New Note', path: '/notes' },
+          { icon: <CheckSquare size={14} />, label: 'New Task', path: '/tasks' },
+          { icon: <Brain size={14} />, label: 'Ask AI', path: '/ai' },
+          { icon: <Target size={14} />, label: 'Set Goal', path: '/goals' },
+          { icon: <Layers size={14} />, label: 'New Project', path: '/shared' },
         ].map((a) => (
-          <button key={a.label} className="quick-action">
+          <button key={a.label} className="quick-action" onClick={() => navigate(a.path)}>
             {a.icon}
             {a.label}
           </button>
@@ -156,16 +115,16 @@ const Dashboard: React.FC = () => {
         <StatCard
           icon={<BookOpen size={16} color="var(--accent-blue)" />}
           iconBg="var(--accent-blue-dim)"
-          value={12}
+          value={notes.length}
           label="Study Notes"
-          trend={{ value: '+3 this week', direction: 'up' }}
+          trend={{ value: 'Updated from API', direction: 'up' }}
         />
         <StatCard
           icon={<CheckSquare size={16} color="var(--color-success)" />}
           iconBg="var(--color-success-dim)"
-          value={7}
+          value={tasks.filter(t => t.status === 'Done' || t.status === 'done').length}
           label="Tasks Done"
-          trend={{ value: '+2 today', direction: 'up' }}
+          trend={{ value: 'Updated from API', direction: 'up' }}
         />
         <StatCard
           icon={<TrendingUp size={16} color="var(--color-warning)" />}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Brain, Check } from 'lucide-react';
+import { authService } from '../services/authService';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface SignupProps {
   onNavigate?: (page: string) => void;
@@ -17,10 +19,31 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onNavigate?.('dashboard');
+    
+    const isPasswordValid = passwordRules.every(rule => rule.test(password));
+    if (!isPasswordValid) {
+      setError('Please ensure your password meets all the rules.');
+      return;
+    }
+    
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authService.signup({ name, email, password });
+      setAuth(data.user || { name, email }, data.token);
+      onNavigate?.('dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,6 +186,12 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </motion.div>
           )}
 
+          {error && (
+            <div style={{ color: 'var(--color-danger)', fontSize: 13, marginBottom: 16, textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
           <motion.button
             id="signup-submit-btn"
             type="submit"
@@ -170,8 +199,9 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             style={{ width: '100%', padding: '11px', fontSize: 14 }}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
+            disabled={loading}
           >
-            Create account
+            {loading ? 'Creating account...' : 'Create account'}
           </motion.button>
         </form>
 

@@ -1,0 +1,56 @@
+/* Global design system helpers */
+:root {
+  /* Spacing scale */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+
+  /* Typography scale (mirrors request) */
+  --type-display: 48px;
+  --type-heading: 36px;
+  --type-subheading: 24px;
+  --type-body: 16px;
+  --type-small: 14px;
+  --type-caption: 12px;
+
+  /* Z-index system */
+  --z-dropdown: 700;
+  --z-modal: 800;
+  --z-topbar: 600;
+  --z-sidebar: 500;
+  --z-toast: 900;
+}
+
+/* Font */
+html, body {
+  font-family: var(--font-sans);
+}
+
+/* Utilities */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Accessibility focus */
+:focus {
+  outline: 3px solid rgba(59,130,246,0.18);
+  outline-offset: 2px;
+}
+
+/* Small helpers */
+.row { display:flex; gap:var(--space-3); }
+.col { display:flex; flex-direction:column; gap:var(--space-3); }
+
+/* Typography helpers */
+.h-display { font-size: var(--type-display); font-weight:700; }
+.h1 { font-size: var(--type-heading); font-weight:700; }
+.h2 { font-size: var(--type-subheading); font-weight:600; }
+.p { font-size: var(--type-body); }
+.small { font-size: var(--type-small); }
+.caption { font-size: var(--type-caption); color: var(--text-tertiary); }

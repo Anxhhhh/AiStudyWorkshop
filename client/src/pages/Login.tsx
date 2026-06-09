@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Brain } from 'lucide-react';
+import { authService } from '../services/authService';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface LoginProps {
   onNavigate?: (page: string) => void;
@@ -10,10 +12,24 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onNavigate?.('dashboard');
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authService.login({ email, password });
+      setAuth(data.user || { email }, data.token);
+      onNavigate?.('dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,6 +121,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
             </span>
           </div>
 
+          {error && (
+            <div style={{ color: 'var(--color-danger)', fontSize: 13, marginBottom: 16, textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
           <motion.button
             id="login-submit-btn"
             type="submit"
@@ -112,8 +134,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
             style={{ width: '100%', padding: '11px', fontSize: 14 }}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
+            disabled={loading}
           >
-            Sign in
+            {loading ? 'Signing in...' : 'Sign in'}
           </motion.button>
         </form>
 

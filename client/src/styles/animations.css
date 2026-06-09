@@ -1,0 +1,35 @@
+/* Subtle UI animations and keyframes */
+@keyframes floatUp {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: floatUp 260ms cubic-bezier(.2,.9,.3,1) both;
+}
+
+.scale-pop {
+  transform-origin: center;
+  transition: transform 160ms var(--transition-fast);
+}
+
+/* Small utility for skeletons */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}

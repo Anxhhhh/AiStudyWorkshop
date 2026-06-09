@@ -1,12 +1,19 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Notes from './pages/Notes';
 import Tasks from './pages/Tasks';
 import AI from './pages/AI';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import SharedWorkspace from './pages/SharedWorkspace';
+import Goals from './pages/Goals';
+import Meetings from './pages/Meetings';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
 
 /* ─── Page metadata ─── */
 const pageLabels: Record<string, string> = {
@@ -55,10 +62,12 @@ const AppShell: React.FC = () => {
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/ai" element={<AI />} />
         {/* Placeholder pages */}
-        <Route path="/shared" element={<PlaceholderPage title="Shared Workspace" desc="Collaborate with your team in real time." />} />
-        <Route path="/goals" element={<PlaceholderPage title="Goals" desc="Track your learning goals and milestones." />} />
-        <Route path="/meetings" element={<PlaceholderPage title="Meeting Notes" desc="Capture and organize all your meeting notes." />} />
-        <Route path="/profile" element={<PlaceholderPage title="Profile" desc="Manage your account and preferences." />} />
+        <Route path="/shared" element={<SharedWorkspace />} />
+        <Route path="/goals" element={<Goals />} />
+        <Route path="/meetings" element={<Meetings />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>
@@ -99,7 +108,7 @@ const App: React.FC = () => {
         <Route path="/login" element={<LoginWrapper />} />
         <Route path="/signup" element={<SignupWrapper />} />
         {/* App pages — with layout */}
-        <Route path="/*" element={<AppShell />} />
+        <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
